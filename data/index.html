@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>koken-key</title>
+</head>
+<body>
+	<style>
+		:root{color:#fff;background-color:#222;}
+		*{font-family:monospace;font-size:1.5rem;}
+	</style>
+	パスワードを平文で垂れ流さないよ
+	<input type="password" id="pass"><br>
+	<button id="cbtn">close</button> <button id="obtn">open</button>
+	<script>
+		const
+			te=new TextEncoder(),
+			le4=x=>[x&0xff,(x>>>8)&0xff,(x>>>16)&0xff,(x>>>24)&0xff],
+			crc=(t=>(buf,crc=0)=>~buf.reduce((c,x)=>t[(c^x)&0xff]^(c>>>8),~crc))([...Array(256)].map((_,n)=>[...Array(8)].reduce(c=>((c&1)?0xedb88320:0)^(c>>>1),n))),// https://www.rfc-editor.org/rfc/rfc1952
+			hash=async()=>await(await fetch('hash')).text(),
+			key=async x=>(crc([...te.encode(pass.value),...le4(+('0x'+(x||await hash())))])>>>0).toString(16).padStart(8,0),
+			act=async act=>await fetch('/',{method:'POST',headers:{key:await key(),act}});
+		cbtn.onclick=async()=>await act('close');
+		obtn.onclick=async()=>await act('open');
+	</script>
+</body>
+</html>
